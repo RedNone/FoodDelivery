@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">FoodDelivery</string>
+    <string name="SingIN">Sing In</string>
+    <string name="CreateAc">Create Account</string>
+    <string name="loginTitle">Food Delivery</string>
+    <string name="incorrectInput">Incorrect Input</string>
+    <string name="errorSign">Sign in error</string>
+    <string name="errorCreateAcc">Create Acc error</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
 </resources>
