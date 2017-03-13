@@ -12,4 +12,10 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <string name="DrawerHeader">Food Delivery</string>
+    <string name="DrawerText">Greet YOU!</string>
+    <string name="settings">Settings</string>
+    <string name="menu">Menu</string>
+    <string name="basket">Basket</string>
+    <string name="help">Help</string>
 </resources>
