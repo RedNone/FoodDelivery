@@ -51,7 +51,9 @@
                 android:layout_margin="15dp"
                 android:layout_weight="1"
                 android:hint="Email"
-                android:inputType="textEmailAddress" />
+                android:inputType="textEmailAddress"
+                android:text="Vasilevichnikolai@gmail.com"
+                tools:text="Vasilevichnikolai@gmail.com" />
 
             <EditText
                 android:id="@+id/editPassword"
@@ -60,7 +62,9 @@
                 android:layout_margin="15dp"
                 android:layout_weight="1"
                 android:hint="Password"
-                android:inputType="textPassword" />
+                android:inputType="textPassword"
+                android:text="16935253452667"
+                tools:text="16935253452667" />
         </LinearLayout>
 
         <LinearLayout
