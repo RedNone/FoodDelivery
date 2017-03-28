@@ -2,7 +2,8 @@ package com.example.rednone.fooddelivery;
 
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -15,17 +16,26 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
 
     List<DataModel> dataModels;
+    MenuAdapter menuAdapter;
+    FragmentTransaction fragmentTransaction;
+
+
     private static final String TAG = "myLogs";
+    MenuFragment menuFragment = null;
+    BasketFragment basketFragment = null;
+    FragmentManager manager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +43,17 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
+        menuFragment = new MenuFragment();
+        basketFragment = new BasketFragment();
+        manager = getSupportFragmentManager();
+
+        fragmentTransaction = manager.beginTransaction();
+        fragmentTransaction.add(R.id.mainContainer, menuFragment, menuFragment.TAG);
+        fragmentTransaction.commitNow();
+
+
+
+
 
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -44,18 +65,55 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+
         dataModels = new ArrayList<>();
-        App.getApi().getData().enqueue(new Callback<List<DataModel>>() {
+
+
+        App.setMenuAdapter(new MenuAdapter(dataModels));
+        App.getIntfObj().getData().enqueue(new Callback<List<DataModel>>() {
             @Override
             public void onResponse(Call<List<DataModel>> call, Response<List<DataModel>> response) {
                 Log.d(TAG, "Main Activity: DataCome");
                 dataModels.addAll(response.body());
 
-                for (DataModel obj : dataModels)
-                {
 
-                    Log.d(TAG, obj.getCost());
-                    Log.d(TAG, obj.getName());
+                List<DbModel> appList = DbModel.listAll(DbModel.class);;
+                DbModel dbModel;
+                if(appList.isEmpty())
+                {
+                    for (DataModel obj : dataModels) {
+                        dbModel = new DbModel((obj.getId()), (obj.getCost()), (obj.getName()), (obj.getVersion()));
+                        dbModel.save();
+                    }
+                    //добавить return и adapter
+
+
+                    App.getMenuAdapter().notifyDataSetChanged();
+
+
+                    return;
+
+                }
+
+                DataModel dataModel = dataModels.get(0);
+                if(dataModel.getVersion() == appList.get(0).getVersion())
+                {
+                    Log.d(TAG, "Main Activity: DataError2");
+                   App.getMenuAdapter().notifyDataSetChanged();
+
+
+
+
+                }
+                else
+                {
+                    for (DataModel obj : dataModels) {
+                        dbModel = new DbModel((obj.getId()), (obj.getCost()), (obj.getName()), (obj.getVersion()));
+                        dbModel.save();
+                    }
+                    Log.d(TAG, "Main Activity: DataError3");
+
+                   App.getMenuAdapter().notifyDataSetChanged();
 
                 }
             }
@@ -67,7 +125,11 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "Main Activity: DataError");
             }
         });
+
+
+
     }
+
 
     @Override
     public void onBackPressed() {
@@ -105,17 +167,25 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
+        fragmentTransaction = manager.beginTransaction();
         int id = item.getItemId();
 
         if (id == R.id.drawerMenu) {
-            // Handle the camera action
+            if(manager.findFragmentByTag(MenuFragment.TAG) == null)
+            {
+                fragmentTransaction.replace(R.id.mainContainer, menuFragment, menuFragment.TAG);
+            }
         } else if (id == R.id.basket) {
+
+            if(manager.findFragmentByTag(BasketFragment.TAG) == null)
+            {
+                fragmentTransaction.replace(R.id.mainContainer, basketFragment, basketFragment.TAG);
+            }
 
         } else if (id == R.id.help) {
 
-        } else if (id == R.id.settingsDrawer) {
-
         }
+        fragmentTransaction.commitNow();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

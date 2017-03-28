@@ -13,6 +13,6 @@ import retrofit2.http.Query;
 
 public interface getJS {
 
-    @GET("/RedNone/GetJson/master/dishesnew.json")
+    @GET("/RedNone/GetJson/master/dishes.json")
     Call<List<DataModel>> getData();
 }

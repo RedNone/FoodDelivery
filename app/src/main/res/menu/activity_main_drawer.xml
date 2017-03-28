@@ -16,10 +16,7 @@
             android:title="@string/help" />
 
 
-            <item
-                android:id="@+id/settingsDrawer"
-                android:icon="@drawable/ic_settings_black_24dp"
-                android:title="Settings" />
+
 
         </group>
 
