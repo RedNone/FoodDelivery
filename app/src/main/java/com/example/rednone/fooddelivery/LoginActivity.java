@@ -23,7 +23,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
-
+import java.util.List;
 
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
@@ -43,7 +43,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     private Intent intent;
 
+    private List<DbModelUser> userList;
+
     private final String TAG = "LoginTag";
+
+    private DbModelUser dbModelUser;
+
+
 
 
     @Override
@@ -51,8 +57,20 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        Log.d(TAG, "Start");
+
+        userList = DbModelUser.listAll(DbModelUser.class);
+
         intent = new Intent(this,MainActivity.class);
+
+
+
+        Log.d(TAG, "Start");
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Please wait");
+        progressDialog.setMessage("Loading...");
+        progressDialog.setCancelable(false);
+
 
         //EditTexts
         editEmail = (EditText) findViewById(R.id.editEmail);
@@ -85,6 +103,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     {
         if (!CheckInput()){return;}
 
+        progressDialog.show();
+
         Log.d(TAG, "email " + email + " password" + password);
         createAcc.setEnabled(false);
         signIn.setEnabled(false);
@@ -96,13 +116,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 Log.d(TAG," task: " + task.isSuccessful());
                 if(task.isSuccessful())
                 {
-
+                    dbModelUser = new DbModelUser(editEmail.getText().toString());
+                    dbModelUser.save();
+                    progressDialog.dismiss();
                     startActivity(intent);
-                    createAcc.setEnabled(true);
-                    signIn.setEnabled(true);
+                    finish();
                 }
                 else
                 {
+                    progressDialog.dismiss();
                     Snackbar.make(Layout,R.string.errorCreateAcc,Snackbar.LENGTH_SHORT).show();
 
                 }
@@ -116,6 +138,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     {
         if (!CheckInput()){return;}
 
+        progressDialog.show();
         createAcc.setEnabled(false);
         signIn.setEnabled(false);
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -124,12 +147,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 Log.d(TAG," task: " + task.isSuccessful());
                 if(task.isSuccessful())
                 {
+                    dbModelUser = new DbModelUser(editEmail.getText().toString());
+                    dbModelUser.save();
+                    progressDialog.dismiss();
                     startActivity(intent);
-                    createAcc.setEnabled(true);
-                    signIn.setEnabled(true);
+                    finish();
+
                 }
                 else
                 {
+                    progressDialog.dismiss();
                     Snackbar.make(Layout,R.string.errorSign,Snackbar.LENGTH_SHORT).show();
                 }
                 createAcc.setEnabled(true);
@@ -160,6 +187,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onStart() {
         super.onStart();
         mAuth.addAuthStateListener(mAuthListener);
+        if(!userList.isEmpty())
+        {
+            startActivity(intent);
+            finish();
+        }
     }
 
     @Override

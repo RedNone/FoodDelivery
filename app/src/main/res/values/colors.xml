@@ -5,4 +5,5 @@
     <color name="colorAccent">#FFA000</color>
     <color name="colorText">#E0E0E0</color>
     <color name="colorDrawer">#304ffe</color>
+    <color name="blue_swipe">#ff00ddff</color>
 </resources>

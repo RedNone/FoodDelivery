@@ -1,5 +1,7 @@
 package com.example.rednone.fooddelivery;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
@@ -28,14 +30,14 @@ public class MainActivity extends AppCompatActivity
 
 
     List<DataModel> dataModels;
-    MenuAdapter menuAdapter;
     FragmentTransaction fragmentTransaction;
 
 
     private static final String TAG = "myLogs";
-    MenuFragment menuFragment = null;
+    private MenuFragment menuFragment = null;
     BasketFragment basketFragment = null;
     FragmentManager manager;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,9 +53,10 @@ public class MainActivity extends AppCompatActivity
         fragmentTransaction.add(R.id.mainContainer, menuFragment, menuFragment.TAG);
         fragmentTransaction.commitNow();
 
-
-
-
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Please wait");
+        progressDialog.setMessage("Loading...");
+        progressDialog.setCancelable(false);
 
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -67,68 +70,50 @@ public class MainActivity extends AppCompatActivity
 
 
         dataModels = new ArrayList<>();
-
-
         App.setMenuAdapter(new MenuAdapter(dataModels));
+        downloadData();
+        progressDialog.show();
+
+
+
+    }
+
+    protected  void downloadData()
+    {
+        if(!dataModels.isEmpty()){dataModels.clear();}
+
+        menuFragment = (MenuFragment) manager.findFragmentByTag(MenuFragment.TAG);
+
         App.getIntfObj().getData().enqueue(new Callback<List<DataModel>>() {
             @Override
             public void onResponse(Call<List<DataModel>> call, Response<List<DataModel>> response) {
                 Log.d(TAG, "Main Activity: DataCome");
                 dataModels.addAll(response.body());
-
-
-                List<DbModel> appList = DbModel.listAll(DbModel.class);;
-                DbModel dbModel;
-                if(appList.isEmpty())
+                App.getMenuAdapter().notifyDataSetChanged();
+                menuFragment.callBack();
+                if(progressDialog.isShowing())
                 {
-                    for (DataModel obj : dataModels) {
-                        dbModel = new DbModel((obj.getId()), (obj.getCost()), (obj.getName()), (obj.getVersion()));
-                        dbModel.save();
-                    }
-                    //добавить return и adapter
-
-
-                    App.getMenuAdapter().notifyDataSetChanged();
-
-
-                    return;
-
+                    progressDialog.dismiss();
                 }
 
-                DataModel dataModel = dataModels.get(0);
-                if(dataModel.getVersion() == appList.get(0).getVersion())
-                {
-                    Log.d(TAG, "Main Activity: DataError2");
-                   App.getMenuAdapter().notifyDataSetChanged();
-
-
-
-
-                }
-                else
-                {
-                    for (DataModel obj : dataModels) {
-                        dbModel = new DbModel((obj.getId()), (obj.getCost()), (obj.getName()), (obj.getVersion()));
-                        dbModel.save();
-                    }
-                    Log.d(TAG, "Main Activity: DataError3");
-
-                   App.getMenuAdapter().notifyDataSetChanged();
-
-                }
             }
 
             @Override
             public void onFailure(Call<List<DataModel>> call, Throwable t) {
 
-                Toast.makeText(MainActivity.this, "Load Error", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Load Error.Please refreshe it", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Main Activity: DataError");
+                menuFragment.callBack();
+                if(progressDialog.isShowing())
+                {
+                    progressDialog.dismiss();
+                }
+
             }
         });
 
-
-
     }
+
 
 
     @Override
@@ -141,28 +126,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-   /* @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }*/
 
-  /*  @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-*/
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -184,6 +148,11 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.help) {
 
+        }
+        else if (id == R.id.logout) {
+            new DbModelUser().deleteAll(DbModelUser.class);
+            startActivity(new Intent(this,LoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+            finish();
         }
         fragmentTransaction.commitNow();
 

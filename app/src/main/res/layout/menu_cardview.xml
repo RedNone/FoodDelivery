@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         app:cardBackgroundColor="@android:color/holo_red_light"
         app:cardCornerRadius="24dp"
-        app:cardElevation="12dp"
+        app:cardElevation="3dp"
         app:cardUseCompatPadding="true">
 
         <LinearLayout
