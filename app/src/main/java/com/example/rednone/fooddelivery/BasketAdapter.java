@@ -15,10 +15,10 @@ import java.util.List;
 
 public class BasketAdapter extends RecyclerView.Adapter<BasketAdapter.ViewHolder> {
 
-    private List<BasketModel> list;
+    private List<DataModel> list;
 
-    public BasketAdapter(List<BasketModel> basketModelsList) {
-        this.list = basketModelsList;
+    public BasketAdapter(List<DataModel> dataModels) {
+        this.list = dataModels;
     }
 
     @Override
@@ -32,10 +32,10 @@ public class BasketAdapter extends RecyclerView.Adapter<BasketAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(BasketAdapter.ViewHolder holder, int position) {
-        BasketModel basketModel = list.get(position);
+        DataModel dataModel = list.get(position);
 
-        holder.name.setText(basketModel.getName());
-        holder.cost.setText(basketModel.getCost());
+        holder.name.setText(dataModel.getName());
+        holder.cost.setText(dataModel.getCost());
 
     }
 

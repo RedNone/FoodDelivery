@@ -13,48 +13,20 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 
 public class App extends SugarApp {
-    private static getJS intfObj;
-    private Retrofit retrofit;
-    private static MenuAdapter menuAdapter;
-    private static List<BasketModel> basketModelsList;
 
+    private static List<DataModel> dataModels;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        retrofit = new Retrofit.Builder()
-                .baseUrl("http://raw.githubusercontent.com/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        intfObj = retrofit.create(getJS.class);
-        basketModelsList = new ArrayList<>();
+        dataModels = new ArrayList<>();
     }
 
-    public static List<BasketModel> getBasketModelsList() {
-        return basketModelsList;
+    public static List<DataModel> getDataModels() {
+        return dataModels;
     }
 
-    public static void setBasketModelsList(List<BasketModel> basketModelsLists) {
-        basketModelsList = basketModelsLists;
+    public static void setDataModels(List<DataModel> dataModels) {
+        App.dataModels = dataModels;
     }
-    public static void addList(int id, String name, String cost)
-    {
-        basketModelsList.add(new BasketModel(id,name,cost));
-    }
-
-
-    public static void setMenuAdapter(MenuAdapter menuAdapter) {
-        App.menuAdapter = menuAdapter;
-    }
-
-    public static MenuAdapter getMenuAdapter() {
-        return menuAdapter;
-    }
-    public static getJS getIntfObj() {
-        return intfObj;
-    }
-
-
-
 }

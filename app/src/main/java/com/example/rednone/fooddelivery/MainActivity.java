@@ -4,9 +4,11 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -23,35 +25,46 @@ import java.util.concurrent.TimeUnit;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener{
 
 
-    List<DataModel> dataModels;
+
     FragmentTransaction fragmentTransaction;
 
 
     private static final String TAG = "myLogs";
-    private MenuFragment menuFragment = null;
-    BasketFragment basketFragment = null;
-    FragmentManager manager;
+    private FragmentManager manager;
     private ProgressDialog progressDialog;
+    private  getJS intfObj;
+    private Retrofit retrofit;
+    private Toolbar toolbar;
+    private MainFragment mainFragment;
+    private BasketFragment basketFragment;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
-        menuFragment = new MenuFragment();
-        basketFragment = new BasketFragment();
-        manager = getSupportFragmentManager();
 
-        fragmentTransaction = manager.beginTransaction();
-        fragmentTransaction.add(R.id.mainContainer, menuFragment, menuFragment.TAG);
-        fragmentTransaction.commitNow();
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setTitle("Меню");
+
+        mainFragment = new MainFragment();
+        basketFragment = new BasketFragment();
+
+
+        manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.add(R.id.mainConteiner,mainFragment,mainFragment.TAG);
+        transaction.commitNow();
+
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Please wait");
@@ -69,50 +82,74 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
 
-        dataModels = new ArrayList<>();
-        App.setMenuAdapter(new MenuAdapter(dataModels));
+        retrofit = new Retrofit.Builder()
+                .baseUrl("http://raw.githubusercontent.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        intfObj = retrofit.create(getJS.class);
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
         downloadData();
         progressDialog.show();
-
-
 
     }
 
     protected  void downloadData()
     {
-        if(!dataModels.isEmpty()){dataModels.clear();}
+            mainFragment = (MainFragment) manager.findFragmentByTag(MainFragment.TAG);
+            intfObj.getData().enqueue(new Callback<List<DataModel>>() {
+                @Override
+                public void onResponse(Call<List<DataModel>> call, Response<List<DataModel>> response) {
 
-        menuFragment = (MenuFragment) manager.findFragmentByTag(MenuFragment.TAG);
 
-        App.getIntfObj().getData().enqueue(new Callback<List<DataModel>>() {
-            @Override
-            public void onResponse(Call<List<DataModel>> call, Response<List<DataModel>> response) {
-                Log.d(TAG, "Main Activity: DataCome");
-                dataModels.addAll(response.body());
-                App.getMenuAdapter().notifyDataSetChanged();
-                menuFragment.callBack();
-                if(progressDialog.isShowing())
-                {
-                    progressDialog.dismiss();
+                    Log.d(TAG, "Main Activity: DataCome");
+                    Log.d(TAG, "AAAAAdd");
+                    if (App.getDataModels().isEmpty()) {
+                        App.getDataModels().addAll(response.body());
+                    } else {
+                        List<DataModel> list = new ArrayList<>();
+                        list.addAll(response.body());
+
+                        for (DataModel objList : list) {
+                            for (DataModel objData : App.getDataModels()) {
+                                if (objList.getId() == objData.getId()) {
+                                    objList.setBasket(objData.getBasket());
+                                    break;
+                                }
+                            }
+                        }
+                        App.setDataModels(list);
+                    }
+
+
+                   mainFragment.getFragmentsCallbacks();
+                   mainFragment.setFragmentsData();
+
+                    if (progressDialog.isShowing()) {
+                        progressDialog.dismiss();
+                    }
+
                 }
 
-            }
+                @Override
+                public void onFailure(Call<List<DataModel>> call, Throwable t) {
 
-            @Override
-            public void onFailure(Call<List<DataModel>> call, Throwable t) {
+                    Toast.makeText(MainActivity.this, "Load Error.Please refreshe it", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Main Activity: DataError");
+                    mainFragment.getFragmentsCallbacks();
+                    if (progressDialog.isShowing()) {
+                        progressDialog.dismiss();
+                    }
 
-                Toast.makeText(MainActivity.this, "Load Error.Please refreshe it", Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "Main Activity: DataError");
-                menuFragment.callBack();
-                if(progressDialog.isShowing())
-                {
-                    progressDialog.dismiss();
                 }
+            });
+        }
 
-            }
-        });
-
-    }
 
 
 
@@ -135,15 +172,18 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.drawerMenu) {
+            toolbar.setTitle("Меню");
+
             if(manager.findFragmentByTag(MenuFragment.TAG) == null)
             {
-                fragmentTransaction.replace(R.id.mainContainer, menuFragment, menuFragment.TAG);
+                fragmentTransaction.replace(R.id.mainConteiner, mainFragment, mainFragment.TAG);
             }
         } else if (id == R.id.basket) {
+            toolbar.setTitle("Корзина");
 
             if(manager.findFragmentByTag(BasketFragment.TAG) == null)
             {
-                fragmentTransaction.replace(R.id.mainContainer, basketFragment, basketFragment.TAG);
+                fragmentTransaction.replace(R.id.mainConteiner, basketFragment, basketFragment.TAG);
             }
 
         } else if (id == R.id.help) {
@@ -160,4 +200,6 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
 }

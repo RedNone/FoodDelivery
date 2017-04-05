@@ -15,6 +15,9 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -41,17 +44,27 @@ public class BasketFragment extends Fragment {
         floatingActionButton = (FloatingActionButton) rootView.findViewById(R.id.floatingActionButton);
         recyclerView = (RecyclerView) rootView.findViewById(R.id.basketRecycler);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
-        basketAdapter = new BasketAdapter(App.getBasketModelsList());
+
+        List<DataModel> list = new ArrayList<>();
+        for (DataModel obj : App.getDataModels())
+        {
+            if(obj.getBasket() == true)
+            {
+                list.add(obj);
+            }
+        }
+
+        basketAdapter = new BasketAdapter(list);
 
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(basketAdapter);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!App.getBasketModelsList().isEmpty()) {
+                if(!App.getDataModels().isEmpty()) {
                     GsonBuilder gsonBuilder = new GsonBuilder();
                     Gson gson = gsonBuilder.create();
-                    Log.d(TAG, gson.toJson(App.getBasketModelsList()));
+                    Log.d(TAG, gson.toJson(App.getDataModels()));
                 }
             }
         });

@@ -1,6 +1,7 @@
 package com.example.rednone.fooddelivery;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -8,22 +9,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
- * Created by RedNone on 23.03.2017.
+ * Created by RedNone on 02.04.2017.
  */
 
-public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
+public class DrinksAdapter extends RecyclerView.Adapter<DrinksAdapter.ViewHolder> {
 
-    private List<DataModel> list;
+    private List<DataModel> dataModelList;
 
-    public MenuAdapter(List<DataModel> list) {
-        this.list = list;
+    public DrinksAdapter(List<DataModel> dataModelList) {
+        this.dataModelList = dataModelList;
     }
 
     @Override
@@ -32,15 +32,17 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
         LayoutInflater inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.menu_cardview,parent,false);
 
-        return new ViewHolder(view);
+        return new DrinksAdapter.ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
-        final DataModel dataModel = list.get(position);
+    public void onBindViewHolder(DrinksAdapter.ViewHolder holder, int position) {
+
+        final DataModel dataModel = dataModelList.get(position);
 
         holder.name.setText(dataModel.getName());
         holder.cost.setText(String.valueOf(dataModel.getCost()));
+        holder.imageView.setImageResource(R.drawable.drinks);
 
 
 
@@ -87,28 +89,27 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
 
                     }
                 }
-                Log.d("MenuAdapter", App.getDataModels().toString());
+                Log.d("DrinksAdapter", App.getDataModels().toString());
             }
         });
 
-
     }
-
 
     @Override
     public int getItemCount() {
-        return list.size();
+        return dataModelList.size() ;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView name,cost;
         CheckBox checkBox;
+        ImageView imageView;
         public ViewHolder(View itemView) {
             super(itemView);
             name = (TextView) itemView.findViewById(R.id.pizzaName);
             cost = (TextView) itemView.findViewById(R.id.pizzaCost);
             checkBox = (CheckBox) itemView.findViewById(R.id.agreeCheckBox);
-
+            imageView = (ImageView) itemView.findViewById(R.id.imageViewCard);
         }
     }
 }
